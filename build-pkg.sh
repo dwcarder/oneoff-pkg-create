@@ -1,36 +1,110 @@
 #!/bin/sh
 
-usage ()
-{
-	echo "Usage: $0 <manifest_template> <files_directory>"
-	exit
+# build a one-off FreeBSD package (outside of the ports ecosystem)
+# 2017-02-13 Dale W. Carder <dwcarder@es.net>
+#
+# Requires:
+#  1) a MANIFEST.template file specifying some package manifest metadata
+#     with the exception of the files to be installed which this script
+#     generates.
+#
+#  2) a Makefile in the current directory with an install target that 
+#     allows specifying installation into a STAGEDIR directory. 
+#  
+#  OR) specify a directory that already contains a filesystem with
+#     the components to be packaged.
+#
+# This code is forked from https://github.com/danrue/oneoff-pkg-create 
+# by Dan Rue <drue@therub.org> which was in turn based on 
+# https://github.com/bdrewery/freebsd_base_pkgng by Bryan Drewery 
+# <bdrewery@FreeBSD.org>.
+#
+# This script is largely based on the above prior work, though the
+# specific syntax of the +MANIFEST file on my system (with version
+# pkg-1.9.4_1a) differs from that as described in pkg-create(8) and also 
+# differs slightly from the above examples and what is found in
+#   https://github.com/freebsd/pkg/blob/master/README.md
+# To see other real examples, dump an existing package  manifest via:
+# 'pkg info -R <packagename>'
+
+usage () {
+	echo "Usage: $0 -m <manifest_template> [-d <files_directory>]"
+	exit 1
 }
 
-if [ "$#" -ne 2 ]
-then
+OPTIND=1         # Reset in case getopts has been used previously in the shell.
+#MANIFEST_TEMPLATE=""
+STAGEDIR=""
+FILES_MODE=false
+
+while getopts "h?m:d:" opt; do
+    case "$opt" in
+    h|\?)
+        usage
+        exit 0
+        ;;
+    m)  MANIFEST_TEMPLATE=$OPTARG
+        ;;
+    d)  STAGEDIR=$OPTARG
+	FILES_MODE=true
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+[ "$1" = "--" ] && shift
+
+if [ -z ${MANIFEST_TEMPLATE+x} ] ; then
+	echo "manifest template not defined."
+	usage
+fi
+if [ ! -e ${MANIFEST_TEMPLATE} ]; then
+	echo "can't find manifest template. "
 	usage
 fi
 
-manifest_template=$1
-files_dir=$2
-DIR_SIZE=$(find ${files_dir} -type f -exec stat -f %z {} + | awk 'BEGIN {s=0} {s+=$1} END {print s}')
+if [ ${FILES_MODE} = true ]; then
+   if [ ! -d ${STAGEDIR} ]; then
+	echo "can't find files directory. "
+	usage
+   fi
+else
+	# makefile mode, install into a temp dir that we will package up
+	export STAGEDIR=/tmp/stage.$$
+	mkdir ${STAGEDIR}
+	make install
+fi
+
+
+DIR_SIZE=$(find ${STAGEDIR} -type f -exec stat -f %z {} + | awk 'BEGIN {s=0} {s+=$1} END {print s}')
 export DIR_SIZE
 {
-	. ${manifest_template}
+	. ${MANIFEST_TEMPLATE}
 	# Add files in
-	echo "files:"
-	find ${files_dir} -type f -exec sha256 -r {} + |
-		awk '{print "    /" $2 ": " $1}'
+	echo "files {"
+	find ${STAGEDIR} -type f -exec sha256 -r {} + |
+       	   awk '{print "    " $2 " = \{sum: \"" $1 "\", uname: root, gname: wheel\} ;" }'
+
 	# Add symlinks in
-	find ${files_dir} -type l |
+	find ${STAGEDIR} -type l |
 		awk "{print \"    /\" \$1 \": '-'\"}"
 
-	# Add files_directories in
-	echo "files_directories:"
-	find ${files_dir} -type d -mindepth 1 |
-		awk '{print "    /" $1 ": y"}'
+	echo "}"
+	
+	# note, I haven't tested this
+	# Add empty directories in
+	#echo "directories:"
+	#find ${STAGEDIR} -type d -mindepth 1 |
+	#	awk '{print "    /" $1 ": y"}'
 
-} | sed -e "s:${files_dir}::" > +MANIFEST
+} | sed -e "s:${STAGEDIR}::" > +MANIFEST
+
 
 # Create the package
-pkg create -r ${files_dir} -m . -o .
+pkg create -r ${STAGEDIR} -m . -o .
+
+
+if [ ! ${FILES_MODE} ]; then
+	# clean up our mess
+	rm -r ${STAGEDIR}
+fi
