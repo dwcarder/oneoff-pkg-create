@@ -69,6 +69,12 @@ if [ ${FILES_MODE} = true ]; then
 	usage
    fi
 else
+	if [ ! -e Makefile ]; then
+	   echo "can't find a Makefile in the current directory.  "
+	   echo "Put one there that understands installing into a STAGEDIR, otherwise use the -d option."
+	   usage
+	fi
+
 	# makefile mode, install into a temp dir that we will package up
 	export STAGEDIR=/tmp/stage.$$
 	mkdir ${STAGEDIR}
@@ -104,7 +110,7 @@ export DIR_SIZE
 pkg create -r ${STAGEDIR} -m . -o .
 
 
-if [ ! ${FILES_MODE} ]; then
+if [ ${FILES_MODE} = false ]; then
 	# clean up our mess
 	rm -r ${STAGEDIR}
 fi
