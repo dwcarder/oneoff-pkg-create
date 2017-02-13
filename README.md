@@ -14,7 +14,7 @@ Optionally specify a directory that already contains a filesystem with the compo
 
 Otherwise, it will use `make` in the current directory assuming that the Makefile provides an 'install' target that allows specifying installation into a [STAGEDIR](https://wiki.freebsd.org/ports/StageDir) directory.
 
-Usage: build-pkg.sh -m <manifest_template> [-d <files_directory>]
+Usage: `build-pkg.sh -m <manifest_template> [-d <files_directory>]`
 
 Example
 =======
