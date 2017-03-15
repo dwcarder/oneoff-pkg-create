@@ -113,4 +113,5 @@ pkg create -r ${STAGEDIR} -m . -o .
 if [ ${FILES_MODE} = false ]; then
 	# clean up our mess
 	rm -r ${STAGEDIR}
+	rm +MANIFEST
 fi
