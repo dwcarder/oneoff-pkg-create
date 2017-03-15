@@ -109,9 +109,8 @@ export DIR_SIZE
 # Create the package
 pkg create -r ${STAGEDIR} -m . -o .
 
-
+# clean up our mess
+rm +MANIFEST
 if [ ${FILES_MODE} = false ]; then
-	# clean up our mess
 	rm -r ${STAGEDIR}
-	rm +MANIFEST
 fi
