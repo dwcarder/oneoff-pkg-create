@@ -81,7 +81,11 @@ fi
 DIR_SIZE=$(find ${STAGEDIR} -type f -exec stat -f %z {} + | awk 'BEGIN {s=0} {s+=$1} END {print s}')
 export DIR_SIZE
 {
+	# parse the template
 	. ${MANIFEST_TEMPLATE}
+} > +MANIFEST
+
+{
 	# Add files in
 	echo "files {"
 	find ${STAGEDIR} -type f -exec sha256 -r {} + |
@@ -99,7 +103,7 @@ export DIR_SIZE
 	#find ${STAGEDIR} -type d -mindepth 1 |
 	#	awk '{print "    /" $1 ": y"}'
 
-} | sed -e "s:${STAGEDIR}::" > +MANIFEST
+} | sed -e "s:${STAGEDIR}::" >> +MANIFEST
 
 
 # Create the package
