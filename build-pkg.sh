@@ -37,7 +37,11 @@ while getopts "h?m:d:" opt; do
         ;;
     m)  MANIFEST_TEMPLATE=$OPTARG
         ;;
-    d)  STAGEDIR=$OPTARG
+    d)  case $OPTARG in
+	    # this mess removes trailing slashes.
+            *[!/]*/) OPTARG=${OPTARG%"${OPTARG##*[!/]}"};;
+        esac
+	STAGEDIR=${OPTARG}
 	FILES_MODE=true
         ;;
     esac
