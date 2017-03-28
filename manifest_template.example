@@ -15,4 +15,14 @@ licenses:      [BSD]
 flatsize:      ${DIR_SIZE}
 desc:          Package that installs a fortune into /usr/local/test/fortune
 categories:    [local]
+deps {
+    python27 {
+        origin = "lang/python27";
+        version = "2.7.13_1";
+    }
+    perl5 {
+        origin = "lang/perl5.24";
+        version = "5.24.1.r4_1";
+    }
+}
 EOF
