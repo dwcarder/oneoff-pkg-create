@@ -18,14 +18,6 @@
 # by Dan Rue <drue@therub.org> which was in turn based on 
 # https://github.com/bdrewery/freebsd_base_pkgng by Bryan Drewery 
 # <bdrewery@FreeBSD.org>.
-#
-# This script is largely based on the above prior work, though the
-# specific syntax of the +MANIFEST file on my system (with version
-# pkg-1.9.4_1a) differs from that as described in pkg-create(8) and also 
-# differs slightly from the above examples and what is found in
-#   https://github.com/freebsd/pkg/blob/master/README.md
-# To see other real examples, dump an existing package  manifest via:
-# 'pkg info -R <packagename>'
 
 usage () {
 	echo "Usage: $0 -m <manifest_template> [-d <files_directory>]"

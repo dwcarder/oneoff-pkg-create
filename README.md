@@ -27,3 +27,9 @@ The example package can be added with
 
     pkg add my-fortune-20140624.txz
 
+Notes
+=====
+
+This script is largely based on the above prior work, though the specific syntax of the +MANIFEST file on my system (with version pkg-1.9.4_1a) differs from those previous examples and also doesn't match what is described in pkg-create(8).  That also differs slightly from what is found in the [pkg source code documentation](https://github.com/freebsd/pkg/blob/master/README.md).  Since the documentation is so poor and misleading, your best bet to find out how to structure a +MANIFEST file is to dump an existing package on your system.  
+
+Ex: `pkg info -R <packagename>`
